@@ -9,9 +9,14 @@ const btn = document.getElementById("btn");
 const fileInput = document.getElementById("file-input");
 
 const types = {
+	"gitattributes": "text/plain",
 	"html": "text/html",
 	"css": "text/css",
-	"js": "text/javascript"
+	"js": "text/javascript",
+	"svg": "image/svg+xml",
+	"webp": "image/webp",
+	"ico": "image/vnd.microsoft.icon",
+	"txt": "text/plain"
 };
 
 const fetchScript = `
@@ -73,14 +78,28 @@ function assetPass(assetFiles) {
 
 function cssPass(cssFiles) {
 	for (const file of cssFiles) {
+		const decoded = decoder.decode(file.value);
+
+		const result = decoded.replaceAll(
+			/url\((['"])(.*?)\1\)/g,
+			(_match, quote, url) => {
+				console.log(url)
+				const newUrl = new URL(url, location.origin + file.path);
+				const blobUrl = blobUrls[newUrl.pathname];
+				return `url(${quote}${blobUrl}${quote})`;
+			}
+		);
+
+		file.value = encoder.encode(result);
+
 		createBlobUrl(file);
 	}
 }
 
 function htmlPass(htmlFiles) {
 	for (const file of htmlFiles) {
-		const decodedHtml = decoder.decode(file.value);
-		const doc = parser.parseFromString(decodedHtml, "text/html");
+		const decoded = decoder.decode(file.value);
+		const doc = parser.parseFromString(decoded, "text/html");
 
 		for (const element of doc.querySelectorAll("[href]")) {
 			element.href = getBlobUrl(element.href);
@@ -100,6 +119,11 @@ function htmlPass(htmlFiles) {
 	}
 }
 
+function defineProperty(obj, prop, descriptor) {
+	const originalDescriptor = Object.getOwnPropertyDescriptor(obj, prop);
+	Object.defineProperty(obj, prop, { ...originalDescriptor, ...descriptor });
+}
+
 async function load(data) {
 	const bytes = new Uint8Array(await data.arrayBuffer());
 	const files = await new Promise((resolve, reject) => {
@@ -117,10 +141,24 @@ async function load(data) {
 	const htmlFiles = [];
 
 	for (const [key, value] of Object.entries(files)) {
+		if (key.endsWith("/")) {
+			continue;
+		}
+
 		const path = key.slice(key.indexOf("/"));
 		const ext = path.slice(path.lastIndexOf(".") + 1);
-		const type = types[ext] || "application/octet-stream";
+		const type = types[ext];
 		const entry = { value, path, ext, type };
+
+		if (type === undefined) {
+			if (false) {
+				throw new Error(`No media type for ${ext}`);
+			} else {
+				entry.type = "application/octet-stream";
+			}
+		}
+
+
 
 		if (ext === "html") {
 			htmlFiles.push(entry);
