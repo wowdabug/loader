@@ -1,45 +1,14 @@
+<!DOCTYPE html>
 <html>
-    <head>
-        <title>Loader</title>
-        <style>
-
-        </style>
-    </head>
-    <body>
-        <button id="file-button">choose a zip</button>
-        <input type="file" id="file-input" style="display: none;" accept="application/zip">
-        <span id="file-info">no zip chosen</span><br>
-        <button id="load-button">load zip</button>
-        <script>
-            const fileBtn = document.getElementById("file-button");
-            const fileInput = document.getElementById("file-input");
-            const fileInfo = document.getElementById("file-info");
-            const loadBtn = document.getElementById("load-button");
-
-            fileBtn.addEventListener("click", () => fileInput.click());
-
-            let file = null;
-
-            fileInput.addEventListener("change", (event) => {
-                const files = event.target.files;
-
-                if (files.length > 0) {
-                    file = files[0];
-                    fileInfo.textContent = file.name;
-                } else {
-                    fileInfo.textContent = "no zip chosen";
-                }
-            });
-
-            loadBtn.addEventListener("click", () => {
-                if (file) {
-                    load();
-                }
-            });
-
-            function load() {
-                if ()
-            }
-        </script>
-    </body>
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<title>Site Loader</title>
+		<link rel="stylesheet" href="style.css">
+	</head>
+	<body>
+		<button id="btn">Click me!</button>
+		<input type="file" id="file-input">
+		<script type="module" src="main.js"></script>
+	</body>
 </html>
